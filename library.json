@@ -1,0 +1,22 @@
+{
+  "name": "bsec3",
+  "description": "Bosch Sensortec Environmental Cluster (BSEC) Software library for use with the BME6x has been conceptualized to provide higher-level signal processing and fusion for the BME68x. The library receives compensated sensor values from the sensor API. It processes the BME68x signals to provide the requested sensor outputs.",
+  "homepage": "https://www.bosch-sensortec.com/software-tools/software/bme688-software/",
+  "examples": [
+    {
+      "name": "Basic usage for Adafruit ESP8266 Board",
+      "base": "examples/basic",
+      "files": ["basic.ino"]
+    },
+	{
+      "name": "Basic usage with config state saves for Adafruit ESP8266 Board",
+      "base": "examples/basic_config_state",
+      "files": ["basic_config_state.ino"]
+    },
+	{
+      "name": "Basic usage for Adafruit ESP32 Feather Board",
+      "base": "examples/x8_board_examples/basic",
+      "files": ["basic.ino"]
+    }
+  ]
+}

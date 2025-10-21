@@ -1,0 +1,1 @@
+Copy here the right binaries fom BSEC3 SDk https://www.bosch-sensortec.com/software-tools/software/bme688-and-bme690-software/#Library
