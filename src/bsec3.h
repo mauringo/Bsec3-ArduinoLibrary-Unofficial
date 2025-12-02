@@ -30,7 +30,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @file	bsec2.h
+ * @file	bsec3.h
  * @date	18 July 2024
  * @version	2.1.5
  *
@@ -49,7 +49,7 @@
 /* dependent library header */
 #include "bme69xLibrary.h"
 #include "inc/bsec_datatypes.h"
-#include "inc/bsec_interface_multi.h"
+#include "inc/bsec_interface.h"
 
 #ifndef ARRAY_LEN
 #define ARRAY_LEN(array)				(sizeof(array)/sizeof(array[0]))
@@ -280,3 +280,4 @@ private:
 };
 
 #endif /* BSEC2_CLASS_H */
+
