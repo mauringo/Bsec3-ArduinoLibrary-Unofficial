@@ -462,3 +462,4 @@ void Bsec3::setBme69xConfigParallel()
 
     opMode = BME69X_PARALLEL_MODE;
 }
+
