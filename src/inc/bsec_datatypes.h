@@ -113,12 +113,12 @@ extern "C"
 typedef enum
 {
     /**
-     * @brief Pressure sensor output of BME68x [Pa]
+     * @brief Pressure sensor output of BME69x [Pa]
      */
     BSEC_INPUT_PRESSURE = 1,  
 
     /**
-     * @brief Humidity sensor output of BME68x [%]
+     * @brief Humidity sensor output of BME69x [%]
      *
      * @note Relative humidity strongly depends on the temperature (it is measured at). It may require a conversion to
      * the temperature outside of the device. 
@@ -128,9 +128,9 @@ typedef enum
     BSEC_INPUT_HUMIDITY = 2,            
 
     /**
-     * @brief Temperature sensor output of BME68x [degrees Celsius]
+     * @brief Temperature sensor output of BME69x [degrees Celsius]
      * 
-     * @note The BME68x is factory trimmed, thus the temperature sensor of the BME68x is very accurate. 
+     * @note The BME69x is factory trimmed, thus the temperature sensor of the BME69x is very accurate. 
      * The temperature value is a very local measurement value and can be influenced by external heat sources. 
      *
      * @sa bsec_virtual_sensor_t
@@ -138,7 +138,7 @@ typedef enum
     BSEC_INPUT_TEMPERATURE = 3,        
 
     /**
-     * @brief Gas sensor resistance output of BME68x [Ohm]
+     * @brief Gas sensor resistance output of BME69x [Ohm]
      * 
      * The resistance value changes due to varying VOC concentrations (the higher the concentration of reducing VOCs, 
      * the lower the resistance and vice versa). 
@@ -189,7 +189,7 @@ typedef enum
     /**
      * @brief Indoor-air-quality estimate [0-500]
      * 
-     * Indoor-air-quality (IAQ) gives an indication of the relative change in ambient TVOCs detected by BME68x. 
+     * Indoor-air-quality (IAQ) gives an indication of the relative change in ambient TVOCs detected by BME69x. 
      * 
      * @note The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms 
      * automatically calibrate and adapt themselves to the typical environments where the sensor is operated 
@@ -205,7 +205,7 @@ typedef enum
     /**
      * @brief Temperature sensor signal [degrees Celsius]
      * 
-     * Temperature directly measured by BME68x in degree Celsius. 
+     * Temperature directly measured by BME69x in degree Celsius. 
      * 
      * @note This value is cross-influenced by the sensor heating and device specific heating.
      */
@@ -214,14 +214,14 @@ typedef enum
     /**
      * @brief Pressure sensor signal [Pa]
      * 
-     * Pressure directly measured by the BME68x in Pa.
+     * Pressure directly measured by the BME69x in Pa.
      */
     BSEC_OUTPUT_RAW_PRESSURE = 7,                   
 
     /**
      * @brief Relative humidity sensor signal [%] 
      * 
-     * Relative humidity directly measured by the BME68x in %.  
+     * Relative humidity directly measured by the BME69x in %.  
      * 
      * @note This value is cross-influenced by the sensor heating and device specific heating.
      */
@@ -230,7 +230,7 @@ typedef enum
     /**
      * @brief Gas sensor signal [Ohm]
      * 
-     * Gas resistance measured directly by the BME68x in Ohm.The resistance value changes due to varying VOC 
+     * Gas resistance measured directly by the BME69x in Ohm.The resistance value changes due to varying VOC 
      * concentrations (the higher the concentration of reducing VOCs, the lower the resistance and vice versa). 
      */
     BSEC_OUTPUT_RAW_GAS = 9,      
@@ -255,7 +255,7 @@ typedef enum
     /**
      * @brief Sensor heat compensated temperature [degrees Celsius]
      * 
-     * Temperature measured by BME68x which is compensated for the influence of sensor (heater) in degree Celsius. 
+     * Temperature measured by BME69x which is compensated for the influence of sensor (heater) in degree Celsius. 
      * The self heating introduced by the heater is depending on the sensor operation mode and the sensor supply voltage. 
      * 
      * 
@@ -267,14 +267,14 @@ typedef enum
      * 
      *
      * The self-heating in operation mode BSEC_SAMPLE_RATE_ULP is negligible.
-     * The self-heating in operation mode BSEC_SAMPLE_RATE_LP is supported for 1.8V by default (no config file required). If the BME68x sensor supply voltage is 3.3V, the corresponding config file shall be used.
+     * The self-heating in operation mode BSEC_SAMPLE_RATE_LP is supported for 1.8V by default (no config file required). If the BME69x sensor supply voltage is 3.3V, the corresponding config file shall be used.
      */
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE = 14,   
 
     /**
      * @brief Sensor heat compensated humidity [%] 
      * 
-     * Relative humidity measured by BME68x which is compensated for the influence of sensor (heater) in %.
+     * Relative humidity measured by BME69x which is compensated for the influence of sensor (heater) in %.
      * 
      * It converts the ::BSEC_INPUT_HUMIDITY from temperature ::BSEC_INPUT_TEMPERATURE to temperature 
      * ::BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE.
@@ -479,9 +479,9 @@ typedef struct
 } bsec_sensor_configuration_t;
 
 /*!
- * @brief Structure returned by bsec_sensor_control() to configure BME68x sensor  
+ * @brief Structure returned by bsec_sensor_control() to configure BME69x sensor  
  *
- * This structure contains settings that must be used to configure the BME68x to perform a forced-mode measurement. 
+ * This structure contains settings that must be used to configure the BME69x to perform a forced-mode measurement. 
  * A measurement should only be executed if bsec_bme_settings_t::trigger_measurement is 1. If so, the oversampling 
  * settings for temperature, humidity, and pressure should be set to the provided settings provided in 
  * bsec_bme_settings_t::temperature_oversampling, bsec_bme_settings_t::humidity_oversampling, and
@@ -517,3 +517,4 @@ typedef struct
 #endif
 
 #endif
+
