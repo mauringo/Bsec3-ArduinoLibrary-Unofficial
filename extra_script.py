@@ -1,9 +1,11 @@
 Import('env')
 from os.path import join, realpath, exists
+from SCons.Script import Dir
+root = Dir(".").srcnode().abspath
 
 # We need the equivalent of build.mcu in Arduino board definitions. 
 # For ESP this is BOARD_MCU
-cpu = env.get("BOARD_MCU")
+cpu = env.BoardConfig().get("build.mcu", "")
 fpu = ""
 floatabi = ""
 
@@ -29,11 +31,11 @@ for flag in linkflags:
 
 # For M4 / M33 -- use hardfloat binaries when appropriate
 if cpu in ['cortex-m4', 'cortex-m33'] and floatabi == "hard":
-    path = realpath(join("src", cpu, f"{fpu}-{floatabi}"))
+    path = realpath(join(root, "src", cpu, f"{fpu}-{floatabi}"))
 else:
-    path = realpath(join("src", cpu))
+    path = realpath(join(root, "src", cpu))
 
-if exists(path):
+if exists(join(path, "libalgobsec.a")):
     env.Append(
         LIBPATH=[path],
         LIBS=["algobsec"]

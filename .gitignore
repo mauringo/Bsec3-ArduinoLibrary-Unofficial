@@ -1,0 +1,12 @@
+*.zip
+*.a
+*.lib
+*.bin
+*.elf
+*.o
+*.so
+*.dll
+*.dylib
+.pio/
+.DS_Store
+__pycache__/

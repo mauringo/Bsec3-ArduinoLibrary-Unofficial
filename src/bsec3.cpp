@@ -37,6 +37,7 @@
  */
 
 #include "bsec3.h"
+#include <new>
 
 static uint8_t workBuffer[BSEC_MAX_WORKBUFFER_SIZE];
 
@@ -52,6 +53,7 @@ Bsec3::Bsec3(void)
     opMode = BME69X_SLEEP_MODE;
     newDataCallback = nullptr;
     bsecInstance = nullptr;
+    ownsInstance = false;
 
     memset(&version, 0, sizeof(version));
     memset(&bmeConf, 0, sizeof(bmeConf));
@@ -280,7 +282,7 @@ int64_t Bsec3::getTimeMs(void)
 
     lastMillis = timeMs;
 
-    return timeMs + (ovfCounter * INT64_C(0xFFFFFFFF));
+    return timeMs + (ovfCounter * INT64_C(0x100000000));
 }
 
 /**
@@ -289,7 +291,9 @@ int64_t Bsec3::getTimeMs(void)
 void Bsec3::allocateMemory(uint8_t (&memBlock)[BSEC_INSTANCE_SIZE])
 {
     /* allocating memory for the bsec instance */
+    clearMemory();
     bsecInstance = memBlock;
+    ownsInstance = false;
 }
 
 /**
@@ -297,7 +301,9 @@ void Bsec3::allocateMemory(uint8_t (&memBlock)[BSEC_INSTANCE_SIZE])
  */
 void Bsec3::clearMemory(void)
 {
-    delete[] bsecInstance;
+    if (ownsInstance) delete[] bsecInstance;
+    bsecInstance = nullptr;
+    ownsInstance = false;
 }
 
 /* Private functions */
@@ -389,10 +395,15 @@ bool Bsec3::beginCommon()
     if (!bsecInstance)
     {
         /* allocate memory for the instance if not allocated */
-        bsecInstance = new uint8_t[bsec_get_instance_size()];
+        bsecInstance = new (std::nothrow) uint8_t[bsec_get_instance_size()];
+        ownsInstance = true;
+        if (!bsecInstance) {
+            status = BSEC_E_INSUFFICIENT_INSTANCE_SIZE;
+            return false;
+        }
     }
 
-    if (BSEC_INSTANCE_SIZE < bsec_get_instance_size())
+    if (!ownsInstance && BSEC_INSTANCE_SIZE < bsec_get_instance_size())
     {
         status = BSEC_E_INSUFFICIENT_INSTANCE_SIZE;
         return false;

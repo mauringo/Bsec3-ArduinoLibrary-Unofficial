@@ -1,22 +1,32 @@
 {
-  "name": "bsec3",
-  "description": "Bosch Sensortec Environmental Cluster (BSEC) Software library for use with the BME6x has been conceptualized to provide higher-level signal processing and fusion for the BME68x. The library receives compensated sensor values from the sensor API. It processes the BME68x signals to provide the requested sensor outputs.",
-  "homepage": "https://www.bosch-sensortec.com/software-tools/software/bme688-software/",
-  "examples": [
+  "name": "BSEC3_unofficial",
+  "version": "1.11.0",
+  "description": "Unofficial Arduino BSEC3 wrapper for Bosch BME690 air quality sensing.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mauringo/Bsec3-ArduinoLibrary-Unofficial.git"
+  },
+  "homepage": "https://github.com/mauringo/Bsec3-ArduinoLibrary-Unofficial",
+  "authors": [
     {
-      "name": "Basic usage for Adafruit ESP8266 Board",
-      "base": "examples/basic",
-      "files": ["basic.ino"]
+      "name": "Mauro Riboni",
+      "email": "58341265+mauringo@users.noreply.github.com",
+      "url": "https://github.com/mauringo",
+      "maintainer": true
     },
-	{
-      "name": "Basic usage with config state saves for Adafruit ESP8266 Board",
-      "base": "examples/basic_config_state",
-      "files": ["basic_config_state.ino"]
-    },
-	{
-      "name": "Basic usage for Adafruit ESP32 Feather Board",
-      "base": "examples/x8_board_examples/basic",
-      "files": ["basic.ino"]
+    {
+      "name": "Bosch Sensortec"
     }
-  ]
+  ],
+  "frameworks": "arduino",
+  "platforms": [
+    "espressif32"
+  ],
+  "build": {
+    "includeDir": "src",
+    "extraScript": "extra_script.py"
+  },
+  "dependencies": {
+    "BME690_unofficial": "https://github.com/mauringo/BME690-Arduino-lib-unofficial.git"
+  }
 }

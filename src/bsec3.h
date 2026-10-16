@@ -36,8 +36,8 @@
  *
  */
 
-#ifndef BSEC2_H_
-#define BSEC2_H_
+#ifndef BSEC3_H_
+#define BSEC3_H_
 
 /* Includes */
 #ifdef ARDUINO
@@ -255,6 +255,7 @@ private:
     uint32_t lastMillis;
     /* Pointer to hold the address of the instance */
     uint8_t *bsecInstance;
+    bool ownsInstance;
 
     /**
      * @brief Reads the data from the Bme69x sensor and process it
