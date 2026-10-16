@@ -10,3 +10,4 @@
 .pio/
 .DS_Store
 __pycache__/
+src/config/bme690/

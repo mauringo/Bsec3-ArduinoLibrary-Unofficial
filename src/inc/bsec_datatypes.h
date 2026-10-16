@@ -85,8 +85,8 @@ extern "C"
 
 #define BSEC_MAX_WORKBUFFER_SIZE     (4096)    /*!< Maximum size (in bytes) of the work buffer */
 #define BSEC_MAX_PHYSICAL_SENSOR     (8)         /*!< Number of physical sensors that need allocated space before calling bsec_update_subscription() */
-#define BSEC_MAX_PROPERTY_BLOB_SIZE  (532)     /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_configuration() */
-#define BSEC_MAX_STATE_BLOB_SIZE     (180)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
+#define BSEC_MAX_PROPERTY_BLOB_SIZE  (550)     /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_configuration() */
+#define BSEC_MAX_STATE_BLOB_SIZE     (197)        /*!< Maximum size (in bytes) of the data blobs returned by bsec_get_state()*/
 #define BSEC_SAMPLE_RATE_DISABLED    (65535.0f)      /*!< Sample rate of a disabled sensor */
 #define BSEC_SAMPLE_RATE_ULP         (0.0033333f)           /*!< Sample rate in case of Ultra Low Power Mode */
 #define BSEC_SAMPLE_RATE_CONT        (1.0f)          /*!< Sample rate in case of Continuous Mode */
@@ -99,8 +99,8 @@ extern "C"
 #define BSEC_PROCESS_HUMIDITY       (1 << (BSEC_INPUT_HUMIDITY-1))  /*!< process_data bitfield constant for humidity @sa bsec_bme_settings_t */
 #define BSEC_PROCESS_GAS            (1 << (BSEC_INPUT_GASRESISTOR-1)) /*!< process_data bitfield constant for gas sensor @sa bsec_bme_settings_t */
 #define BSEC_PROCESS_PROFILE_PART	(1 << (BSEC_INPUT_PROFILE_PART-1)) /*!< process_data bitfield constant for gas sensor @sa bsec_bme_settings_t */
-#define BSEC_NUMBER_OUTPUTS         (14)         /*!< Number of outputs, depending on solution */
-#define BSEC_OUTPUT_INCLUDED        (1210863)             /*!< bitfield that indicates which outputs are included in the solution */
+#define BSEC_NUMBER_OUTPUTS         (15)         /*!< Number of outputs, depending on solution */
+#define BSEC_OUTPUT_INCLUDED        (1074952687)             /*!< bitfield that indicates which outputs are included in the solution */
 
 /*!
  * @brief Enumeration for input (physical) sensors.
@@ -113,12 +113,12 @@ extern "C"
 typedef enum
 {
     /**
-     * @brief Pressure sensor output of BME69x [Pa]
+     * @brief Pressure sensor output of BME6xy [Pa]
      */
     BSEC_INPUT_PRESSURE = 1,  
 
     /**
-     * @brief Humidity sensor output of BME69x [%]
+     * @brief Humidity sensor output of BME6xy [%]
      *
      * @note Relative humidity strongly depends on the temperature (it is measured at). It may require a conversion to
      * the temperature outside of the device. 
@@ -128,9 +128,9 @@ typedef enum
     BSEC_INPUT_HUMIDITY = 2,            
 
     /**
-     * @brief Temperature sensor output of BME69x [degrees Celsius]
+     * @brief Temperature sensor output of BME6xy [degrees Celsius]
      * 
-     * @note The BME69x is factory trimmed, thus the temperature sensor of the BME69x is very accurate. 
+     * @note The BME6xy is factory trimmed, thus the temperature sensor of the BME6xy is very accurate. 
      * The temperature value is a very local measurement value and can be influenced by external heat sources. 
      *
      * @sa bsec_virtual_sensor_t
@@ -138,7 +138,7 @@ typedef enum
     BSEC_INPUT_TEMPERATURE = 3,        
 
     /**
-     * @brief Gas sensor resistance output of BME69x [Ohm]
+     * @brief Gas sensor resistance output of BME6xy [Ohm]
      * 
      * The resistance value changes due to varying VOC concentrations (the higher the concentration of reducing VOCs, 
      * the lower the resistance and vice versa). 
@@ -148,10 +148,8 @@ typedef enum
     /**
      * @brief Additional input for device heat compensation
      * 
-     * IAQ solution: The value is subtracted from ::BSEC_INPUT_TEMPERATURE to compute 
+     * The value is subtracted from ::BSEC_INPUT_TEMPERATURE to compute 
      * ::BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE.
-     *
-     * ALL solution: Generic heat source 1
      * 
      * @sa bsec_virtual_sensor_t
      */
@@ -160,11 +158,19 @@ typedef enum
     
     
     /**
-     * @brief Additional input that disables baseline tracker
+     * @brief Additional input for controlling IAQ and TVOC equivalent baseline trackers.
      *
-     * 0 - Normal,
-     * 1 - Event 1,
-     * 2 - Event 2
+	 * Allowed input values are:
+	 *
+     * 0 - Default value. IAQ baseline adaptation is enabled and TVOC equivalent baseline adpatation is disabled.
+	 *
+     * 1 - IAQ baseline adaptation is disabled and wait up to 10 seconds before restarting adaptation when input is reset to 0.
+	 *
+     * 2 - IAQ baseline adaptation is disabled and wait up to 3 seconds before restarting adaptation when input is reset to 0.
+	 *
+	 * 3 - TVOC equivalent baseline adaptation enabled.
+	 *
+	 *	@note Baseline is a mechanism for compensating the long term drifts in the enviornment and ensure the consistency of IAQ and TVOC equivalent outputs across different BME sensors. 
      */
     BSEC_INPUT_DISABLE_BASELINE_TRACKER = 23, 
 
@@ -189,7 +195,7 @@ typedef enum
     /**
      * @brief Indoor-air-quality estimate [0-500]
      * 
-     * Indoor-air-quality (IAQ) gives an indication of the relative change in ambient TVOCs detected by BME69x. 
+     * Indoor-air-quality (IAQ) gives an indication of the relative change in ambient TVOCs detected by BME6xy. 
      * 
      * @note The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms 
      * automatically calibrate and adapt themselves to the typical environments where the sensor is operated 
@@ -205,7 +211,7 @@ typedef enum
     /**
      * @brief Temperature sensor signal [degrees Celsius]
      * 
-     * Temperature directly measured by BME69x in degree Celsius. 
+     * Temperature directly measured by BME6xy in degree Celsius. 
      * 
      * @note This value is cross-influenced by the sensor heating and device specific heating.
      */
@@ -214,14 +220,14 @@ typedef enum
     /**
      * @brief Pressure sensor signal [Pa]
      * 
-     * Pressure directly measured by the BME69x in Pa.
+     * Pressure directly measured by the BME6xy in Pa.
      */
     BSEC_OUTPUT_RAW_PRESSURE = 7,                   
 
     /**
      * @brief Relative humidity sensor signal [%] 
      * 
-     * Relative humidity directly measured by the BME69x in %.  
+     * Relative humidity directly measured by the BME6xy in %.  
      * 
      * @note This value is cross-influenced by the sensor heating and device specific heating.
      */
@@ -230,7 +236,7 @@ typedef enum
     /**
      * @brief Gas sensor signal [Ohm]
      * 
-     * Gas resistance measured directly by the BME69x in Ohm.The resistance value changes due to varying VOC 
+     * Gas resistance measured directly by the BME6xy in Ohm.The resistance value changes due to varying VOC 
      * concentrations (the higher the concentration of reducing VOCs, the lower the resistance and vice versa). 
      */
     BSEC_OUTPUT_RAW_GAS = 9,      
@@ -255,7 +261,7 @@ typedef enum
     /**
      * @brief Sensor heat compensated temperature [degrees Celsius]
      * 
-     * Temperature measured by BME69x which is compensated for the influence of sensor (heater) in degree Celsius. 
+     * Temperature measured by BME6xy which is compensated for the influence of sensor (heater) in degree Celsius. 
      * The self heating introduced by the heater is depending on the sensor operation mode and the sensor supply voltage. 
      * 
      * 
@@ -267,14 +273,14 @@ typedef enum
      * 
      *
      * The self-heating in operation mode BSEC_SAMPLE_RATE_ULP is negligible.
-     * The self-heating in operation mode BSEC_SAMPLE_RATE_LP is supported for 1.8V by default (no config file required). If the BME69x sensor supply voltage is 3.3V, the corresponding config file shall be used.
+     * The self-heating in operation mode BSEC_SAMPLE_RATE_LP is supported for 1.8V by default (no config file required). If the BME6xy sensor supply voltage is 3.3V, the corresponding config file shall be used.
      */
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE = 14,   
 
     /**
      * @brief Sensor heat compensated humidity [%] 
      * 
-     * Relative humidity measured by BME69x which is compensated for the influence of sensor (heater) in %.
+     * Relative humidity measured by BME6xy which is compensated for the influence of sensor (heater) in %.
      * 
      * It converts the ::BSEC_INPUT_HUMIDITY from temperature ::BSEC_INPUT_TEMPERATURE to temperature 
      * ::BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE.
@@ -297,6 +303,7 @@ typedef enum
 	
 
 	
+    BSEC_OUTPUT_TVOC_EQUIVALENT = 31                         /*!< TVOC Equivalent in ppb  */
 } bsec_virtual_sensor_t;
 
 /*!
@@ -479,9 +486,9 @@ typedef struct
 } bsec_sensor_configuration_t;
 
 /*!
- * @brief Structure returned by bsec_sensor_control() to configure BME69x sensor  
+ * @brief Structure returned by bsec_sensor_control() to configure BME6xy sensor  
  *
- * This structure contains settings that must be used to configure the BME69x to perform a forced-mode measurement. 
+ * This structure contains settings that must be used to configure the BME6xy to perform a forced-mode measurement. 
  * A measurement should only be executed if bsec_bme_settings_t::trigger_measurement is 1. If so, the oversampling 
  * settings for temperature, humidity, and pressure should be set to the provided settings provided in 
  * bsec_bme_settings_t::temperature_oversampling, bsec_bme_settings_t::humidity_oversampling, and

@@ -204,10 +204,11 @@ public:
 
     /**
      * @brief Function to set the configuration of the algorithm from memory
-     * @param state			: Pointer to a memory location that contains the configuration
+     * @param config : Serialized configuration bytes
+     * @param length : Actual configuration byte count (use sizeof your array)
      * @return	true for success, false otherwise
      */
-    bool setConfig(const uint8_t *config);
+    bool setConfig(const uint8_t *config, uint32_t length = BSEC_MAX_PROPERTY_BLOB_SIZE);
 
     /**
      * @brief Function to set the temperature offset

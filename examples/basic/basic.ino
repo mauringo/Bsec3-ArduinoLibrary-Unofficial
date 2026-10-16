@@ -5,6 +5,7 @@
  */
 #include <Wire.h>
 #include <bsec3.h>
+#include <config/bme690_profile.h>
 
 Bsec3 sensor;
 bool ready = false;
@@ -23,8 +24,9 @@ void setup() {
     while (!Serial && millis() - start < 3000) delay(10);
     Wire.begin(14, 21, 100000); // Polverine; change for your board.
     ready = sensor.begin(BME69X_I2C_ADDR_LOW, Wire);
+    if (ready) ready = sensor.setConfig(bsec3_profile_data, sizeof(bsec3_profile_data));
     bsecSensor outputs[] = {BSEC_OUTPUT_IAQ};
-    if (ready) ready = sensor.updateSubscription(outputs, ARRAY_LEN(outputs), BSEC_SAMPLE_RATE_LP);
+    if (ready) ready = sensor.updateSubscription(outputs, ARRAY_LEN(outputs), BSEC3_PROFILE_SAMPLE_RATE);
     sensor.attachCallback(onData);
     if (!ready) Serial.printf("BSEC: %d, BME690: %d\n", sensor.status, sensor.sensor.status);
 }

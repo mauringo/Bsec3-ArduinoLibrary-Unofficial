@@ -1,6 +1,6 @@
 {
   "name": "BSEC3_unofficial",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "description": "Unofficial Arduino BSEC3 wrapper for Bosch BME690 air quality sensing. Personal hobby work by Mauro Riboni (@mauringo), made for fun and learning. Adapted from the official Bosch Sensortec BSEC2 Arduino library; unofficial and not affiliated with, endorsed, or supported by Bosch. Original licenses and attribution are retained.",
   "repository": {
     "type": "git",

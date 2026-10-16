@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <Preferences.h>
 #include <bsec3.h>
+#include <config/bme690_profile.h>
 
 Bsec3 sensor;
 bool ready = false;
@@ -30,17 +31,21 @@ void setup() {
     while (!Serial && millis() - start < 3000) delay(10);
     Wire.begin(14, 21, 100000); // Polverine; change for your board.
     ready = sensor.begin(BME69X_I2C_ADDR_LOW, Wire);
-    preferences.begin("bsec3", false);
+    if (ready) ready = sensor.setConfig(bsec3_profile_data, sizeof(bsec3_profile_data));
+    char storage[16];
+    snprintf(storage, sizeof(storage), "b%u_%u_%u", BSEC3_SUPPLY_MV, BSEC3_SAMPLE_PERIOD_S, BSEC3_HISTORY_DAYS);
+    preferences.begin(storage, false);
     if (ready && preferences.getBytesLength("state") == sizeof(state)) {
         preferences.getBytes("state", state, sizeof(state));
         if (!sensor.setState(state)) {
             // Discard state from another SDK/configuration, then start fresh.
             preferences.remove("state");
             ready = sensor.begin(BME69X_I2C_ADDR_LOW, Wire);
+            if (ready) ready = sensor.setConfig(bsec3_profile_data, sizeof(bsec3_profile_data));
         }
     }
     bsecSensor outputs[] = {BSEC_OUTPUT_IAQ};
-    if (ready) ready = sensor.updateSubscription(outputs, ARRAY_LEN(outputs), BSEC_SAMPLE_RATE_LP);
+    if (ready) ready = sensor.updateSubscription(outputs, ARRAY_LEN(outputs), BSEC3_PROFILE_SAMPLE_RATE);
     sensor.attachCallback(onData);
     if (!ready) Serial.printf("BSEC: %d, BME690: %d\n", sensor.status, sensor.sensor.status);
 }

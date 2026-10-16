@@ -257,9 +257,9 @@ bool Bsec3::getConfig(uint8_t *config)
 /**
  * @brief Function to set the configuration of the algorithm from memory
  */
-bool Bsec3::setConfig(const uint8_t *config)
+bool Bsec3::setConfig(const uint8_t *config, uint32_t length)
 {
-    status = bsec_set_configuration(bsecInstance, config, BSEC_MAX_PROPERTY_BLOB_SIZE, workBuffer, BSEC_MAX_WORKBUFFER_SIZE);
+    status = bsec_set_configuration(bsecInstance, config, length, workBuffer, BSEC_MAX_WORKBUFFER_SIZE);
     if (status != BSEC_OK)
         return false;
 
