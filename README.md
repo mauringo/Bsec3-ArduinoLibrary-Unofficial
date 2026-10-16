@@ -1,4 +1,4 @@
-# BSEC3_unofficial
+# Bsec3-ArduinoLibrary-Unofficial
 
 Unofficial Arduino framework wrapper maintained by **Mauro Riboni** ([@mauringo](https://github.com/mauringo), 58341265+mauringo@users.noreply.github.com).
 
@@ -12,12 +12,12 @@ Bosch Sensortec remains the author of the original libraries. Original copyright
 
 ## Start with the generic I2C example
 
-After installing the SDK as described below, choose **File → Examples → BSEC3_unofficial → generic_i2c** in Arduino IDE. It explains GPIO choice, sensor address, profile selection, subscriptions, IAQ accuracy, and why `run()` must be called often. It uses ordinary `Serial.print()` rather than an ESP32-specific printing API.
+After installing the SDK as described below, choose **File → Examples → Bsec3-ArduinoLibrary-Unofficial → generic_i2c** in Arduino IDE. It explains GPIO choice, sensor address, profile selection, subscriptions, IAQ accuracy, and why `run()` must be called often. It uses ordinary `Serial.print()` rather than an ESP32-specific printing API.
 
 ## Install
 
-1. Install [BME690_unofficial](https://github.com/mauringo/BME690-Arduino-lib-unofficial) as `<your Arduino sketchbook>/libraries/BME690_unofficial`.
-2. Install this repository alongside it as `libraries/BSEC3_unofficial`. Restart Arduino IDE.
+1. Install [BME690-Arduino-lib-unofficial](https://github.com/mauringo/BME690-Arduino-lib-unofficial) as `<your Arduino sketchbook>/libraries/BME690-Arduino-lib-unofficial`.
+2. Install this repository alongside it as `libraries/Bsec3-ArduinoLibrary-Unofficial`. Restart Arduino IDE.
 3. Obtain **BSEC 3.3.0.1** directly from Bosch and accept the SDK terms. The algorithm archive and profile data are not included here.
 4. From this library directory run the installer, choosing the MCU selected in Arduino IDE:
 
@@ -85,7 +85,11 @@ Keep one long-lived `Bsec3` per sensor. Existing callback signatures pass a copy
 - `basic`: short Polverine/ESP32-S3 IAQ example.
 - `basic_config_state`: ESP32 Preferences state persistence, separated by voltage/period/history profile.
 
-[Polverine Arduino Examples](https://github.com/mauringo/Polverine_Arduino_Examples) combines both libraries with the 7Semi BMV080 driver, matching profiles, board compensation and Serial JSON. Its [Arduino IDE sketch](https://github.com/mauringo/Polverine_Arduino_Examples/tree/main/Arduino_project) is independently documented.
+[Polverine Arduino Examples](https://github.com/mauringo/Polverine_Arduino_Examples) combines both libraries with the Polverine_BMV080_Arduino driver, matching profiles, board compensation and Serial JSON. Its [Arduino IDE sketch](https://github.com/mauringo/Polverine_Arduino_Examples/tree/main/Arduino_project) is independently documented.
+
+## Version 0.0.1
+
+Initial version under the repository-matching library name. Includes the generic I2C example, MCU-specific SDK installation instructions, and the forced-mode timing and pressure-unit fixes. Obtain the proprietary Bosch BSEC3 SDK separately; archive/profile compatibility must be matched exactly. Physical measurement quality still requires hardware validation.
 
 ## Version 1.13.0
 

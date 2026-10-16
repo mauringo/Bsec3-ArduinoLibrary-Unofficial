@@ -8,7 +8,7 @@
  * Original Bosch credits and licenses are retained. Provided as-is.
  * Full Polverine examples: https://github.com/mauringo/Polverine_Arduino_Examples
  */
-// START HERE: install BME690_unofficial and the matching Bosch BSEC3 SDK first.
+// START HERE: install BME690-Arduino-lib-unofficial and the matching Bosch BSEC3 SDK first.
 // The supplied installer supports ESP32 variants. Other MCU targets require a
 // matching Bosch archive and sufficient RAM; portable Wire code is not proof
 // of BSEC support. Do not assume a small AVR board can run this example.
