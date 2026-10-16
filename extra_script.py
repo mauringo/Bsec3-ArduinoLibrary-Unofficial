@@ -1,45 +1,14 @@
+# PlatformIO resolves the local Bosch archive relative to this library.
 Import('env')
-from os.path import join, realpath, exists
+from os.path import join, exists
 from SCons.Script import Dir
-root = Dir(".").srcnode().abspath
 
-# We need the equivalent of build.mcu in Arduino board definitions. 
-# For ESP this is BOARD_MCU
-cpu = env.BoardConfig().get("build.mcu", "")
-fpu = ""
-floatabi = ""
-
-# For ESP32, all variants except original ESP32 and "S" series are riscv
-# The 'esp32c3' target can be used on all riscv ESP32 variants.
-if cpu.startswith("esp32") and not (cpu.startswith("esp32s") or cpu == "esp32"):
-    cpu = "esp32c3"
-    print(f"your CPU is "+cpu)
-
-# For ARM cores, BOARD_MCU is the chip (e.g. rp2040), not the cpu (e.g. cortex-m0plus).
-# To find the correct binary, we check the linkflags.
-linkflags = env.get("LINKFLAGS", [])
-for flag in linkflags:
-    if flag.startswith("-mcpu="):
-        prefix, divider, cpu = flag.partition("=")
-        continue
-    elif flag.startswith("-mfpu="):
-        prefix, divider, fpu = flag.partition("=")
-        continue
-    elif flag.startswith("-mfloat-abi="):
-        prefix, divider, floatabi = flag.partition("=")
-        continue
-
-# For M4 / M33 -- use hardfloat binaries when appropriate
-if cpu in ['cortex-m4', 'cortex-m33'] and floatabi == "hard":
-    path = realpath(join(root, "src", cpu, f"{fpu}-{floatabi}"))
-else:
-    path = realpath(join(root, "src", cpu))
-
-if exists(join(path, "libalgobsec.a")):
-    env.Append(
-        LIBPATH=[path],
-        LIBS=["algobsec"]
+cpu = env.BoardConfig().get('build.mcu', '')
+path = join(Dir('.').srcnode().abspath, 'src', cpu)
+if not exists(join(path, 'libalgobsec.a')):
+    raise RuntimeError(
+        f'BSEC3 archive missing for {cpu}. In this library run: '
+        f'python3 scripts/install_bsec.py /path/to/bsec_v3-3-0-1.zip --mcu {cpu}. '
+        'Supported installer targets: esp32, esp32s2, esp32s3, esp32c3.'
     )
-else:
-    print(f"BSEC3 is not supported for CPU '{cpu} {floatabi}', path '{path}' doesn't exist")
-    exit(1)
+env.Append(LIBPATH=[path], LIBS=['algobsec'])

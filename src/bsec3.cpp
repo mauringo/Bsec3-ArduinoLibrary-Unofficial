@@ -1,6 +1,8 @@
 /**
  * Copyright (c) 2021 Bosch Sensortec GmbH. All rights reserved.
  *
+ * Modifications (C) 2026 Mauro Riboni (@mauringo).
+ * Personal hobby work, made for fun and learning; unofficial and independent of Bosch.
  * BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without

@@ -10,50 +10,87 @@ This library started from the official [Bosch Sensortec BSEC2 Arduino library](h
 
 Bosch Sensortec remains the author of the original libraries. Original copyright notices and licenses are retained; my changes do not imply ownership of Bosch's work. The proprietary BSEC3 algorithm is **not included** and must be obtained separately from Bosch under its SDK license.
 
-## Install for Arduino ESP32-S3
+## Start with the generic I2C example
 
-1. Clone this repository as `Arduino/libraries/BSEC3_unofficial`.
-2. Install [BME690_unofficial](https://github.com/mauringo/BME690-Arduino-lib-unofficial) alongside it as `Arduino/libraries/BME690_unofficial`.
-3. Download BSEC 3.3.0.1 from Bosch and accept the SDK license.
-4. Run `python3 scripts/install_bsec.py /path/to/bsec_v3-3-0-1.zip` from this library directory. It installs the **IAQ ESP32-S3** archive and all eight matching BME690 IAQ profiles locally, ignored by Git.
-5. Select an ESP32-S3 Arduino board and open `examples/basic/basic.ino`. Polverine uses SDA 14, SCL 21 and address `0x76`.
+After installing the SDK as described below, choose **File → Examples → BSEC3_unofficial → generic_i2c** in Arduino IDE. It explains GPIO choice, sensor address, profile selection, subscriptions, IAQ accuracy, and why `run()` must be called often. It uses ordinary `Serial.print()` rather than an ESP32-specific printing API.
 
-For PlatformIO, set `framework = arduino` and add this repository to `lib_deps`. Its BME690 dependency is declared in `library.json`. Install the Bosch archive into the installed library before building. The extra script finds the archive relative to this library, independently of the application's working directory. For a local development workspace, put both libraries directly under `lib/`.
+## Install
 
-Arduino uses mixed-source/precompiled metadata (`precompiled=true`) so the wrapper source is compiled and the supplied algorithm archive is linked. ESP32-S3 is the validated target; other ESP32 variants require their own matching SDK archive. Other MCU architectures are not claimed by this release.
+1. Install [BME690_unofficial](https://github.com/mauringo/BME690-Arduino-lib-unofficial) as `<your Arduino sketchbook>/libraries/BME690_unofficial`.
+2. Install this repository alongside it as `libraries/BSEC3_unofficial`. Restart Arduino IDE.
+3. Obtain **BSEC 3.3.0.1** directly from Bosch and accept the SDK terms. The algorithm archive and profile data are not included here.
+4. From this library directory run the installer, choosing the MCU selected in Arduino IDE:
 
-## API and examples
+```sh
+# Polverine or another ESP32-S3 board:
+python3 scripts/install_bsec.py /path/to/bsec_v3-3-0-1.zip --mcu esp32s3
 
-Include `<bsec3.h>` and create a `Bsec3` instance. Call `begin`, `updateSubscription`, `attachCallback`, then `run` frequently. `examples/basic_config_state` shows ESP32 Preferences state persistence using the default IAQ configuration. All legacy BME680/BME688 and FieldAir selectivity configurations have been removed. Only BME690 IAQ profiles installed from the matching Bosch SDK are supported by the profile selector.
+# Other installer choices (run the ONE matching your MCU):
+# --mcu esp32     Classic ESP32
+# --mcu esp32s2   ESP32-S2
+# --mcu esp32c3   ESP32-C3
+```
 
-`allocateMemory()` accepts a long-lived caller-owned buffer; `clearMemory()` releases only internally owned memory and resets the pointer. Callback signatures remain compatible with the existing API. Avoid copying instances for ownership or manually freeing memory from callback copies. Keep one long-lived instance per sensor.
+The default is `esp32s3` when `--mcu` is omitted. The script installs the **IAQ** archive under `src/<mcu>/` and all eight BME690 IAQ profiles under `src/config/bme690/`. It verifies the profiles against the SDK's byte counts/CSV and refuses mismatched SDK headers. Installed Bosch archives/profile data are ignored by Git.
 
-Version 1.11.0 fixes Arduino/PlatformIO packaging, binary path resolution, instance memory cleanup, allocation failure handling, and millisecond rollover. ESP32-S3 builds use Arduino 2.0.17 and BSEC 3.3.0.1 IAQ. Physical readings and long-term calibration still require hardware validation. SDK ZIPs and proprietary archives must never be committed.
+For PlatformIO use `framework = arduino` and this repository in `lib_deps`, or use local source clones under the project's `lib/` directory. Install the SDK archive in the actual installed BSEC3 library. Its extra script checks the exact MCU archive and prints an installation hint when it is missing.
 
-## BME690 IAQ voltage and timing profiles
+## Choose I2C pins and bus
 
-Include `<config/bme690_profile.h>` after `<bsec3.h>`. After `begin()` and before loading state or subscribing, call:
+**The sketch starts the bus; the library uses the `TwoWire` object supplied to `begin()`.**
+
+- **ESP32 family:** edit `I2C_SDA_PIN` and `I2C_SCL_PIN` in `generic_i2c.ino`. Their initial `SDA`/`SCL` values come from the selected Arduino board. Replace them with your wired GPIO numbers. Polverine uses **14/21**; common classic ESP32 defaults are **21/22**, but ESP32-S3/C3 board layouts vary.
+- **Other Arduino cores:** the example's `#else` branch calls `Wire.begin()` and uses the board's labeled SDA/SCL pins. Custom mapping or a second bus requires that core's API. Never interpret a core's `Wire.begin(address)` overload as a GPIO selection.
+- **Address:** choose `BME69X_I2C_ADDR_LOW` (`0x76`) or `BME69X_I2C_ADDR_HIGH` (`0x77`) independently of pin selection.
+
+The generic Wire branch is portable; **BSEC3 support is a separate constraint**. This release's installer and declared Arduino architecture support the ESP32 family targets listed above. Other MCUs need a suitable Bosch binary, matching ABI/linker setup and enough RAM; they are not claimed as supported by this release. In particular, a small AVR board is not a BSEC3 target just because the raw BME690 example compiles on it.
+
+Check the sensor module's supply/logic voltage and pull-ups. Selecting a BSEC voltage profile does not provide voltage regulation or level shifting.
+
+## Choose a BME690 IAQ profile
+
+Edit the three settings above `#include <config/bme690_profile.h>` in the generic sketch:
+
+| Setting | Allowed values | Default |
+| --- | --- | --- |
+| `BSEC3_SUPPLY_MV` | `1800` or `3300` | `3300` |
+| `BSEC3_SAMPLE_PERIOD_S` | `3` or `300` | `3` |
+| `BSEC3_HISTORY_DAYS` | `4` or `28` | `4` |
+
+Use the **sensor's actual supply**, not the USB voltage. Bosch's `18v`/`33v` filenames mean **1.8 V/3.3 V**. The period chooses LP/3 seconds or ULP/300 seconds. The day value selects the background IAQ calibration history. Unsupported combinations fail at compile time. Only BME690 IAQ data is used; legacy BME680/BME688/selectivity blobs were removed.
+
+After `begin()` and before loading state/subscribing:
 
 ```cpp
 sensor.setConfig(bsec3_profile_data, sizeof(bsec3_profile_data));
 ```
 
-Use `BSEC3_PROFILE_SAMPLE_RATE` when subscribing. It selects LP for 3 seconds or ULP for 300 seconds. Define these options before including the profile header, or via compiler build flags:
+Use `BSEC3_PROFILE_SAMPLE_RATE` for subscriptions. The installer/header use BSEC 3.3.0.1 IAQ's **550-byte** configuration and **197-byte** state sizes. Do not mix headers, state, profiles or algorithm releases.
 
-| Option | Supported values | Default |
-| --- | --- | --- |
-| `BSEC3_SUPPLY_MV` | `1800`, `3300` | `3300` |
-| `BSEC3_SAMPLE_PERIOD_S` | `3`, `300` | `3` |
-| `BSEC3_HISTORY_DAYS` | `4`, `28` | `4` |
+## How it runs
 
-Bosch filenames `18v`/`33v` represent **1.8 V/3.3 V**, not 18 V/33 V. Choose the sensor's actual supply voltage; selecting a profile does not change hardware voltage. The day value selects the SDK's background calibration history variant. Unsupported combinations produce a compiler error. Changing profile uses a separate Preferences namespace in the state example, preventing state from another voltage/timing/history profile being loaded.
+1. Start Wire and initialize the sensor.
+2. Apply the chosen configuration; check the return value.
+3. Subscribe to outputs and attach a data callback.
+4. Call `run()` frequently in `loop()`. BSEC schedules sampling and heater operation itself. A `delay(10)` is sufficient; do not delay for 3 or 300 seconds.
+5. Read results in the callback. IAQ accuracy ranges from 0 to 3 and needs conditioning/environmental variation. Positive status codes are warnings; negative codes are errors. Inspect **both** `sensor.status` and `sensor.sensor.status`.
 
-The installer checks all eight arrays against their SDK byte count and CSV representation, and requires headers matching BSEC 3.3.0.1 IAQ. The header now declares the matching 550-byte property blob and 197-byte state blob; `setConfig` also accepts the actual blob length explicitly. Binary/configuration data are installed locally and excluded from commits.
+BSEC's heat-compensated temperature/humidity correct the sensor heater. Extra board/enclosure heat needs measured compensation, not an arbitrary copied offset. `setTemperatureOffset(celsius)` selects a fixed offset; `setTemperatureOffsetCallback(function)` computes an offset from the current raw temperature before processing that sample. Passing `nullptr` disables the callback. The full Polverine project contains BlackIoT's board-specific tables.
 
-All eight profile combinations compile on ESP32-S3. This verifies selection and build integration, not algorithm acceptance, calibration quality, or physical performance at both voltages. Check `setConfig()` and runtime statuses on the board; those hardware checks remain pending.
+Keep one long-lived `Bsec3` per sensor. Existing callback signatures pass a copy of the wrapper; do not call `clearMemory()` or transfer memory ownership from that copy. `allocateMemory()` uses a long-lived caller buffer; `clearMemory()` frees only internally owned storage. No automatic persistence is performed.
 
-Version 1.11.1 removes legacy configuration data, synchronizes IAQ headers with SDK 3.3.0.1, and adds explicit BME690 profile selection and configuration lengths.
+## Examples and full project
 
-Profile label reference: [Bosch Sensortec explanation of voltage, timing, and calibration history](https://community.bosch-sensortec.com/mems-sensors-forum-jrmujtaw/post/bsec-configurations---operating-age-t8kSaFHerGrTclU).
+- `generic_i2c`: recommended first sketch; ESP32 pins and other-core Wire behavior are explained in place.
+- `basic`: short Polverine/ESP32-S3 IAQ example.
+- `basic_config_state`: ESP32 Preferences state persistence, separated by voltage/period/history profile.
 
-Version 1.12.0 adds `setTemperatureOffsetCallback(float (*)(float))` for board compensation tables. The callback receives the current raw temperature in Celsius before BSEC receives its heat-source input, so temperature and humidity compensation use the current sample. Passing `nullptr` disables the callback; `setTemperatureOffset()` switches back to a constant offset. Board tables remain in the application, outside this sensor-independent library.
+[Polverine Arduino Examples](https://github.com/mauringo/Polverine_Arduino_Examples) combines both libraries with the 7Semi BMV080 driver, matching profiles, board compensation and Serial JSON. Its [Arduino IDE sketch](https://github.com/mauringo/Polverine_Arduino_Examples/tree/main/Arduino_project) is independently documented.
+
+## Version 1.13.0
+
+Adds a commented generic I2C example, clearer installation/troubleshooting, explicit installer selection for ESP32/S2/S3/C3, and project links. Original Bosch notices are preserved. Compilation verifies integration, not calibration quality or physical performance. Hardware validation remains necessary.
+
+References: [Espressif I2C API](https://docs.espressif.com/projects/arduino-esp32/en/latest/api/i2c.html), [Bosch's profile-label explanation](https://community.bosch-sensortec.com/mems-sensors-forum-jrmujtaw/post/bsec-configurations---operating-age-t8kSaFHerGrTclU).
+
+Verified generic-example compilation: **ESP32, ESP32-S2, ESP32-S3 and ESP32-C3 with ESP32 core 3.3.11 and matching BSEC 3.3.0.1 IAQ archives**. These checks did not upload firmware or validate physical measurements.

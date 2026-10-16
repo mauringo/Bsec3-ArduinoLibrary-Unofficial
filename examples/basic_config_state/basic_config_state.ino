@@ -3,6 +3,14 @@
  * Modifications (C) 2026 Mauro Riboni
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
+// Mauro Riboni (@mauringo): personal hobby work, made for fun and learning.
+// Unofficial; not affiliated with, endorsed by, or supported by Bosch.
+
+
+// Complete Polverine Arduino + PlatformIO examples, profiles and compensation:
+// https://github.com/mauringo/Polverine_Arduino_Examples
+
 #include <Wire.h>
 #include <Preferences.h>
 #include <bsec3.h>

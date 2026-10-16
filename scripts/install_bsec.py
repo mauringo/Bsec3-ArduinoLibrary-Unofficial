@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install BSEC3 IAQ ESP32-S3 binary and all eight BME690 profiles locally."""
+"""Install a matching BSEC3 IAQ ESP32 binary and all eight BME690 profiles locally."""
 import argparse
 from pathlib import Path
 import re
@@ -8,9 +8,12 @@ from zipfile import ZipFile
 root = Path(__file__).resolve().parents[1]
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('archive', type=Path)
+p.add_argument('--mcu', choices=['esp32', 'esp32s2', 'esp32s3', 'esp32c3'], default='esp32s3',
+               help='Your MCU, not the board name (default: esp32s3 for Polverine)')
 a = p.parse_args()
+sdk_cpu = {'esp32': 'esp32', 'esp32s2': 'esp32_s2', 'esp32s3': 'esp32_s3', 'esp32c3': 'esp32_c2c3'}[a.mcu]
 with ZipFile(a.archive) as z:
-    binary = z.read('release_bin/IAQ/bin/esp/esp32_s3/libalgobsec.a')
+    binary = z.read(f'release_bin/IAQ/bin/esp/{sdk_cpu}/libalgobsec.a')
     if not binary.startswith(b'!<arch>\n'): raise SystemExit('Invalid static archive')
     profiles = {}
     for voltage in (18, 33):
@@ -30,10 +33,10 @@ with ZipFile(a.archive) as z:
     for name in ('bsec_interface.h', 'bsec_datatypes.h'):
         if (root / 'src/inc' / name).read_bytes() != z.read('release_bin/IAQ/inc/' + name):
             raise SystemExit(f'{name} does not match the supplied IAQ SDK; use BSEC 3.3.0.1')
-    dest = root / 'src/esp32s3/libalgobsec.a'
+    dest = root / 'src' / a.mcu / 'libalgobsec.a'
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(binary)
     dest = root / 'src/config/bme690'
     dest.mkdir(parents=True, exist_ok=True)
     for name, source in profiles.items(): (dest / (name + '.h')).write_text(source)
-print('Installed IAQ ESP32-S3 binary and 8 verified BME690 profiles; all ignored by Git.')
+print(f'Installed IAQ {a.mcu} binary and 8 verified BME690 profiles; all ignored by Git.')

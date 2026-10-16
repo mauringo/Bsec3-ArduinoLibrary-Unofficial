@@ -1,3 +1,9 @@
+# Personal project and upstream licensing
+
+Mauro Riboni's unofficial personal adaptation, made for fun and learning, starting from Bosch Sensortec's BSEC2 Arduino library. It is not endorsed or supported by Bosch. Original Bosch notices and BSD terms are retained below. Bosch SDK headers and downloaded software remain subject to their applicable Bosch terms.
+
+No proprietary Bosch binary archives or SDK ZIPs are distributed in this repository. Downloaded BSEC3 software is governed by the license supplied with that SDK. The BSEC2 reference below records the upstream library's origin.
+
 ## Copyright (c) 2021 Bosch Sensortec GmbH. All rights reserved.
 
 ## BSEC v2.x Arduino Library
@@ -6,7 +12,7 @@
 
 **Usage** : Arduino Library and examples for the BSEC 2.x software library for the BME68x family of sensors
 
-> The binaries redistributed as part of this repository are licensed under the [License Terms and Conditions for the use of Bosch Sensortec GmbH, 
+> Upstream BSEC2 software referenced the [License Terms and Conditions for the use of Bosch Sensortec GmbH,
 Reutlingen, BME688 Software (esp. BME AI-Studio & BSEC 2.x)](https://www.bosch-sensortec.com/media/boschsensortec/downloads/software/bme688_development_software/2023_04/license_terms_bme688_bme680_bsec.pdf)
 
 >The examples and Arduino library are licensed under the BSD-3-Clause license.

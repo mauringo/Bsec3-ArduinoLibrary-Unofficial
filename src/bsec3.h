@@ -1,6 +1,8 @@
 /**
  * Copyright (c) 2021 Bosch Sensortec GmbH. All rights reserved.
  *
+ * Modifications (C) 2026 Mauro Riboni (@mauringo).
+ * Personal hobby work, made for fun and learning; unofficial and independent of Bosch.
  * BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,6 +125,7 @@ public:
      * @param idleTask : Delay or Idle function
      * @return True if everything initialized correctly
      */
+    // Start the chosen Wire/TwoWire bus first; begin() does not select its GPIO pins.
     bool begin(uint8_t i2cAddr, TwoWire &i2c, bme69x_delay_us_fptr_t idleTask = bme69xDelayUs);
 
     /**
