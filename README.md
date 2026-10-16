@@ -2,7 +2,13 @@
 
 Unofficial Arduino framework wrapper maintained by **Mauro Riboni** ([@mauringo](https://github.com/mauringo), 58341265+mauringo@users.noreply.github.com).
 
-Derived from the Bosch Sensortec BSEC Arduino wrapper. Original copyright and license notices are retained. This project is independent of Bosch Sensortec. The proprietary Bosch algorithm is **not included**.
+## Origin and personal-project disclaimer
+
+This library started from the official [Bosch Sensortec BSEC2 Arduino library](https://github.com/boschsensortec/Bosch-BSEC2-Library) and was adapted by **Mauro Riboni (@mauringo)** for BSEC3 and BME690.
+
+**This is my personal hobby project, made privately for fun and learning.** It is shared as unofficial experimental work, not as an official Bosch product. I am not affiliated with Bosch Sensortec, and this project is not endorsed, certified, or supported by Bosch. No promise of reliability, fitness for a particular purpose, continued maintenance, or support is made; use it at your own risk under the applicable licenses.
+
+Bosch Sensortec remains the author of the original libraries. Original copyright notices and licenses are retained; my changes do not imply ownership of Bosch's work. The proprietary BSEC3 algorithm is **not included** and must be obtained separately from Bosch under its SDK license.
 
 ## Install for Arduino ESP32-S3
 
