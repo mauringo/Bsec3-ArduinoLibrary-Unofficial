@@ -94,3 +94,7 @@ Adds a commented generic I2C example, clearer installation/troubleshooting, expl
 References: [Espressif I2C API](https://docs.espressif.com/projects/arduino-esp32/en/latest/api/i2c.html), [Bosch's profile-label explanation](https://community.bosch-sensortec.com/mems-sensors-forum-jrmujtaw/post/bsec-configurations---operating-age-t8kSaFHerGrTclU).
 
 Verified generic-example compilation: **ESP32, ESP32-S2, ESP32-S3 and ESP32-C3 with ESP32 core 3.3.11 and matching BSEC 3.3.0.1 IAQ archives**. These checks did not upload firmware or validate physical measurements.
+
+Version 1.13.1 fixes forced-mode timing: `run()` starts the measurement, returns to the application while T/P/H and the heater finish, then reads/processes the sample without waiting for the next BSEC control cycle. Late samples get a bounded retry window. Pressure remains in Pa throughout, matching the SDK input/output units. Scheduling regression checks cover delayed reads, no premature retrigger, late/error paths and Pa preservation.
+
+Polverine hardware check: profile loading succeeded, but subscribing to `BSEC_OUTPUT_BREATH_VOC_EQUIVALENT` with the BME690 3.3 V / 3-second / 4-day IAQ profile returned `BSEC_E_CONFIG_FEATUREMISMATCH` (-35). The full examples therefore use the verified IAQ, static IAQ, CO2 equivalent, raw and compensated environmental values, and status outputs. Eight live BME callbacks were observed in 22 seconds after correcting the subscription and forced-mode timing. This is a functional output check, not a long-term calibration validation.

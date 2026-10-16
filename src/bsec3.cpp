@@ -53,6 +53,8 @@ Bsec3::Bsec3(void)
     status = BSEC_OK;
 	extTempOffset = 0.0f;
     opMode = BME69X_SLEEP_MODE;
+    measurementPending = false;
+    measurementReadyNs = 0;
     newDataCallback = nullptr;
     bsecInstance = nullptr;
     ownsInstance = false;
@@ -150,68 +152,72 @@ bool Bsec3::updateSubscription(bsecSensor sensorList[], uint8_t nSensors, float 
  */
 bool Bsec3::run(void)
 {
-    uint8_t nFieldsLeft = 0;
-    bme69xData data;
-    int64_t currTimeNs = getTimeMs() * INT64_C(1000000);
-    opMode = bmeConf.op_mode;
+    const int64_t nowNs = getTimeMs() * INT64_C(1000000);
 
-    if (currTimeNs >= bmeConf.next_call)
+    // Forced mode needs T/P/H conversion time PLUS heater time. Keep returning
+    // to the application while the sensor works so other sensors can be served.
+    if (measurementPending)
     {
-        /* Provides the information about the current sensor configuration that is
-           necessary to fulfill the input requirements, eg: operation mode, timestamp
-           at which the sensor data shall be fetched etc */
-        status = bsec_sensor_control(bsecInstance ,currTimeNs, &bmeConf);
-        if (status != BSEC_OK)
-            return false;
-
-        switch (bmeConf.op_mode)
+        if (nowNs < measurementReadyNs) return true;
+        if (!sensor.fetchData())
         {
-        case BME69X_FORCED_MODE:
-            setBme69xConfigForced();
-            break;
-        case BME69X_PARALLEL_MODE:
-            if (opMode != bmeConf.op_mode)
-            {
-                setBme69xConfigParallel();
-            }
-            break;
-
-        case BME69X_SLEEP_MODE:
-            if (opMode != bmeConf.op_mode)
-            {
-                sensor.setOpMode(BME69X_SLEEP_MODE);
-                opMode = BME69X_SLEEP_MODE;
-            }
-            break;
-        }
-
-        if (sensor.checkStatus() == BME69X_ERROR)
+            // Allow a bounded retry window for clock/sensor timing differences.
+            if (sensor.status >= BME69X_OK &&
+                nowNs < measurementReadyNs + INT64_C(500000000)) return true;
+            measurementPending = false;
             return false;
-
-        if (bmeConf.trigger_measurement && bmeConf.op_mode != BME69X_SLEEP_MODE)
-        {
-            if (sensor.fetchData())
-            {
-                do
-                {
-                    nFieldsLeft = sensor.getData(data);
-                    /* check for valid gas data */
-                    if (data.status & BME69X_GASM_VALID_MSK)
-                    {
-						/* Convert sensor raw pressure unit from pascal to hecto pascal */
-						data.pressure *= 0.01f;
-
-                        if (!processData(currTimeNs, data))
-                        {
-                            return false;
-                        }
-                    }
-                } while (nFieldsLeft);
-            }
-
         }
-
+        measurementPending = false;
+        return processFetchedData(nowNs);
     }
+
+    if (nowNs < bmeConf.next_call) return true;
+    const uint8_t previousMode = opMode;
+    status = bsec_sensor_control(bsecInstance, nowNs, &bmeConf);
+    if (status != BSEC_OK) return false;
+
+    switch (bmeConf.op_mode)
+    {
+    case BME69X_FORCED_MODE:
+        if (bmeConf.trigger_measurement)
+        {
+            setBme69xConfigForced();
+            if (sensor.status < BME69X_OK) return false;
+            const int64_t durationUs = sensor.getMeasDur(BME69X_FORCED_MODE) +
+                                      INT64_C(1000) * bmeConf.heater_duration;
+            // Start the wait after configuring/triggering the sensor, not before
+            // the I2C writes. Arduino loop() continues running during this wait.
+            measurementReadyNs = getTimeMs() * INT64_C(1000000) + durationUs * 1000;
+            measurementPending = true;
+            return true;
+        }
+        break;
+    case BME69X_PARALLEL_MODE:
+        if (previousMode != BME69X_PARALLEL_MODE) setBme69xConfigParallel();
+        break;
+    case BME69X_SLEEP_MODE:
+        if (previousMode != BME69X_SLEEP_MODE) sensor.setOpMode(BME69X_SLEEP_MODE);
+        opMode = BME69X_SLEEP_MODE;
+        break;
+    }
+    if (sensor.status < BME69X_OK) return false;
+    if (bmeConf.trigger_measurement && bmeConf.op_mode != BME69X_SLEEP_MODE && sensor.fetchData())
+        return processFetchedData(nowNs);
+    return sensor.status >= BME69X_OK;
+}
+
+bool Bsec3::processFetchedData(int64_t timestampNs)
+{
+    uint8_t fieldsLeft;
+    bme69xData data;
+    do
+    {
+        fieldsLeft = sensor.getData(data);
+        // SensorAPI and BSEC3 both use Pa. Preserve the original units for BSEC
+        // AND for the raw data delivered to the user's callback.
+        if ((data.status & BME69X_GASM_VALID_MSK) && !processData(timestampNs, data))
+            return false;
+    } while (fieldsLeft);
     return true;
 }
 
@@ -418,6 +424,7 @@ bool Bsec3::beginCommon()
         status = BSEC_E_INSUFFICIENT_INSTANCE_SIZE;
         return false;
     }
+    measurementPending = false;
     status = bsec_init(bsecInstance);
     if (status != BSEC_OK)
         return false;

@@ -253,6 +253,9 @@ private:
     bsecOutputs outputs;
     /* operating mode of sensor */
     uint8_t opMode;
+    bool measurementPending;
+    int64_t measurementReadyNs;
+    bool processFetchedData(int64_t timestampNs);
 
     float extTempOffset;
     /** Global variables to help create a millisecond timestamp that doesn't overflow every 51 days.
