@@ -214,8 +214,14 @@ public:
      * @brief Function to set the temperature offset
      * @param tempOffset	: Temperature offset in degree Celsius
      */
+    // Dynamic board compensation: called BEFORE the current sample is processed.
+    void setTemperatureOffsetCallback(float (*callback)(float)) {
+        temperatureOffsetCallback = callback;
+    }
+
     void setTemperatureOffset(float tempOffset)
     {
+        temperatureOffsetCallback = nullptr;
         extTempOffset = tempOffset;
     }
 
@@ -257,6 +263,7 @@ private:
     /* Pointer to hold the address of the instance */
     uint8_t *bsecInstance;
     bool ownsInstance;
+    float (*temperatureOffsetCallback)(float);
 
     /**
      * @brief Reads the data from the Bme69x sensor and process it

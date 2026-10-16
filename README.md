@@ -55,3 +55,5 @@ All eight profile combinations compile on ESP32-S3. This verifies selection and 
 Version 1.11.1 removes legacy configuration data, synchronizes IAQ headers with SDK 3.3.0.1, and adds explicit BME690 profile selection and configuration lengths.
 
 Profile label reference: [Bosch Sensortec explanation of voltage, timing, and calibration history](https://community.bosch-sensortec.com/mems-sensors-forum-jrmujtaw/post/bsec-configurations---operating-age-t8kSaFHerGrTclU).
+
+Version 1.12.0 adds `setTemperatureOffsetCallback(float (*)(float))` for board compensation tables. The callback receives the current raw temperature in Celsius before BSEC receives its heat-source input, so temperature and humidity compensation use the current sample. Passing `nullptr` disables the callback; `setTemperatureOffset()` switches back to a constant offset. Board tables remain in the application, outside this sensor-independent library.

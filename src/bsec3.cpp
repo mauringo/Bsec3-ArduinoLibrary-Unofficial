@@ -54,6 +54,7 @@ Bsec3::Bsec3(void)
     newDataCallback = nullptr;
     bsecInstance = nullptr;
     ownsInstance = false;
+    temperatureOffsetCallback = nullptr;
 
     memset(&version, 0, sizeof(version));
     memset(&bmeConf, 0, sizeof(bmeConf));
@@ -319,6 +320,13 @@ bool Bsec3::processData(int64_t currTimeNs, const bme69xData &data)
     if (BSEC_CHECK_INPUT(bmeConf.process_data, BSEC_INPUT_HEATSOURCE))
     {
         inputs[nInputs].sensor_id = BSEC_INPUT_HEATSOURCE;
+        if (temperatureOffsetCallback) {
+#ifdef BME69X_USE_FPU
+            extTempOffset = temperatureOffsetCallback(data.temperature);
+#else
+            extTempOffset = temperatureOffsetCallback(data.temperature / 100.0f);
+#endif
+        }
         inputs[nInputs].signal = extTempOffset;
         inputs[nInputs].time_stamp = currTimeNs;
         nInputs++;
